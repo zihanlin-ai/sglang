@@ -1,19 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
-import random
 import sys
 from pathlib import Path
 
-import numpy as np
 import pytest
 import torch
 from gguf import GGMLQuantizationType, GGUFReader, ReaderTensor, dequantize
 from huggingface_hub import snapshot_download
 from sgl_kernel import (
     ggml_dequantize,
-    ggml_moe_a8,
-    ggml_moe_a8_vec,
-    ggml_moe_get_block_size,
     ggml_mul_mat_a8,
     ggml_mul_mat_vec_a8,
 )

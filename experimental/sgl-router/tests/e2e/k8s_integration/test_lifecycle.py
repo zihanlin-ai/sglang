@@ -13,10 +13,8 @@ by driving the deployment scale.
 
 from __future__ import annotations
 
-import logging
 
 import httpx
-import pytest
 from conftest import (
     NAMESPACE,
     _cleanup_port_forward,
@@ -24,7 +22,6 @@ from conftest import (
     _poll_until,
     _port_forward_start,
     _wait_for_deployment_ready,
-    logger,
 )
 
 ROUTER_RESTART_PORT = 8092

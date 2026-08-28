@@ -15,7 +15,6 @@ coverage is provided by test_lifecycle.TestRouterRestart.
 
 from __future__ import annotations
 
-import logging
 import time
 
 import httpx

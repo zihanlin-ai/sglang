@@ -2,7 +2,6 @@
 # (batch_size, seq_len, hidden_size) and prints speed-up.
 import argparse
 import itertools
-import os
 import re
 from typing import List, Optional, Tuple, Union
 

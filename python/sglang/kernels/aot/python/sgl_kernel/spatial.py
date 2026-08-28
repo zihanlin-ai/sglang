@@ -2,7 +2,7 @@ import torch
 from torch.cuda.streams import ExternalStream
 
 try:
-    from . import spatial_ops  # triggers TORCH extension registration
+    pass  # triggers TORCH extension registration
 except Exception as _e:
     _spatial_import_error = _e
 else:

@@ -58,7 +58,6 @@ def setup_backend(request: pytest.FixtureRequest, model_pool: "ModelPool"):
             def test_chat(self, setup_backend):
                 backend, model, client, gateway = setup_backend
     """
-    import openai
     from infra import (
         DEFAULT_MODEL,
         DEFAULT_ROUTER_TIMEOUT,
@@ -66,9 +65,6 @@ def setup_backend(request: pytest.FixtureRequest, model_pool: "ModelPool"):
         ENV_SKIP_BACKEND_SETUP,
         LOCAL_MODES,
         ConnectionMode,
-        Gateway,
-        WorkerIdentity,
-        WorkerType,
     )
 
     backend_name = request.param

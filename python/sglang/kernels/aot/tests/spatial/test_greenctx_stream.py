@@ -2,7 +2,6 @@ import sys
 
 import pytest
 import torch
-import torch.nn.functional as F
 from sgl_kernel import create_greenctx_stream_by_value, get_sm_available
 
 

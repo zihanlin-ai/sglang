@@ -1,5 +1,4 @@
 import argparse
-import random
 from dataclasses import dataclass
 from typing import List, Tuple
 

@@ -1,8 +1,6 @@
-import subprocess
 import sys
 from pathlib import Path
 
-import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
@@ -15,7 +13,6 @@ from generator_testlib import (  # noqa: F401
 )
 from mechanical_refactor_proof_generator import (
     infer_recipe,
-    recipe_to_script,
 )
 
 

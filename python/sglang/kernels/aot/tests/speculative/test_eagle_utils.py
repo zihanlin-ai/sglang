@@ -2,7 +2,6 @@ import sys
 
 import pytest
 import torch
-import torch.nn.functional as F
 from sgl_kernel import verify_tree_greedy
 
 

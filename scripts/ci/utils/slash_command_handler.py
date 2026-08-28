@@ -5,7 +5,7 @@ import re
 import sys
 import time
 import unicodedata
-from datetime import datetime, timezone
+from datetime import datetime
 
 import requests
 from github import Auth, Github

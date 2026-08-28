@@ -1,7 +1,6 @@
 import sys
 
 import pytest
-import sgl_kernel
 import torch
 from sgl_kernel.elementwise import copy_to_gpu_no_ce
 

@@ -8,8 +8,7 @@ routes chat-completion requests to them.
 from __future__ import annotations
 
 import httpx
-import pytest
-from conftest import NAMESPACE, _kubectl, _poll_until, logger
+from conftest import NAMESPACE, _kubectl, _poll_until
 
 
 def _scale_fake_worker(replicas: int) -> None:

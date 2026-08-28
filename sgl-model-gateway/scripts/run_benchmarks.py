@@ -7,7 +7,6 @@ Replaces the shell script for better maintainability and integration.
 """
 
 import argparse
-import os
 import subprocess
 import sys
 import time

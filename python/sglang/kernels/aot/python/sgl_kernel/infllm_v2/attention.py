@@ -4,7 +4,6 @@ Ported (drop-in) from ``3rdparty/infllmv2_cuda_impl/infllm_v2/infllmv2_sparse_at
 The CUDA backend now lives in the standalone ``infllm_ops`` extension.
 """
 
-import torch
 from sgl_kernel.infllm_v2._loader import load_infllm_ops
 
 

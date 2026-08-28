@@ -1,6 +1,5 @@
 import itertools
 import sys
-from typing import Optional, Tuple
 
 import pytest
 import torch
