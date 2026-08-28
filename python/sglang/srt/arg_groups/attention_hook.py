@@ -8,7 +8,20 @@ import os
 from typing import Any
 
 from sglang.srt.arg_groups.overrides import (
+    _attention_backend_default,
+    _attention_backend_dual_chunk,
+    _attention_backend_fa3_fp8_fallback,
+    _attention_backend_platform_fallbacks,
+    _cutedsl_prefill_backend_fill,
+    _deterministic_allreduce_fusion_disable,
+    _deterministic_attention_backend,
+    _deterministic_sampling_backend,
+    _fa4_page_constraint,
+    _intel_xpu_page_constraint,
+    _mla_backend_page_constraints,
+    _mla_kv_cache_dtype_checks,
     declare_resolution,
+    mamba_extra_buffer_of,
     resolved_view,
     resolving_view,
 )
@@ -41,16 +54,7 @@ def handle_attention_backend_compatibility(server_args: Any):
     # The attention_backend write clusters of this handler moved to the
     # resolution pipeline (arg_groups/overrides.py), each invoked below at
     # its legacy slot; the interleaved non-attention adjustments stay.
-    from sglang.srt.arg_groups.overrides import (
-        _attention_backend_default,
-        _attention_backend_dual_chunk,
-        _attention_backend_fa3_fp8_fallback,
-        _attention_backend_platform_fallbacks,
-        _fa4_page_constraint,
-        _intel_xpu_page_constraint,
-        _mla_backend_page_constraints,
-        run_post_process_pass,
-    )
+    from sglang.srt.arg_groups.overrides import run_post_process_pass
 
     # Split-backend override + default fill.
     run_post_process_pass(server_args, _attention_backend_default)
@@ -122,14 +126,12 @@ def handle_attention_backend_compatibility(server_args: Any):
     # The TRT-LLM / tokenspeed MLA kv-dtype validations moved to the
     # resolution pipeline (arg_groups/overrides.py:
     # _mla_kv_cache_dtype_checks), invoked here at their legacy slot.
-    from sglang.srt.arg_groups.overrides import _mla_kv_cache_dtype_checks
 
     run_post_process_pass(server_args, _mla_kv_cache_dtype_checks)
 
     # The CuteDSL MLA validation + prefill fill moved to the resolution
     # pipeline (arg_groups/overrides.py: _cutedsl_prefill_backend_fill),
     # invoked here at its legacy slot.
-    from sglang.srt.arg_groups.overrides import _cutedsl_prefill_backend_fill
 
     run_post_process_pass(server_args, _cutedsl_prefill_backend_fill)
 
@@ -334,9 +336,6 @@ def handle_linear_attn_backend(server_args: Any):
                 "KDA, as the linear-attn decode backend; got "
                 f"--linear-attn-decode-backend={decode!r}."
             )
-        from sglang.srt.arg_groups.overrides import (
-            mamba_extra_buffer_of,
-        )
 
         if mamba_extra_buffer_of(resolved_view(server_args)):
             raise ValueError(
@@ -538,21 +537,14 @@ def handle_deterministic_inference(server_args: Any):
         # Moved to the resolution pipeline (arg_groups/overrides.py:
         # _deterministic_allreduce_fusion_disable), invoked here at its
         # legacy slot.
-        from sglang.srt.arg_groups.overrides import (
-            _deterministic_allreduce_fusion_disable,
-            run_post_process_pass,
-        )
+        from sglang.srt.arg_groups.overrides import run_post_process_pass
 
         run_post_process_pass(server_args, _deterministic_allreduce_fusion_disable)
 
         # The forced-pytorch sampling write and the attention backend
         # fill/validation moved to the resolution pipeline
         # (arg_groups/overrides.py), invoked at their legacy slots.
-        from sglang.srt.arg_groups.overrides import (
-            _deterministic_attention_backend,
-            _deterministic_sampling_backend,
-            run_post_process_pass,
-        )
+        from sglang.srt.arg_groups.overrides import run_post_process_pass
 
         run_post_process_pass(server_args, _deterministic_sampling_backend)
         is_deepseek_model = False

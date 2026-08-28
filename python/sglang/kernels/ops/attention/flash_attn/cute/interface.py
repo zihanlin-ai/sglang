@@ -172,11 +172,7 @@ def _tile_size_fwd_sm90(
     head_dim <= 96 the optimal tile_m=192 is used when compatible, otherwise we
     fall back to 128.
     """
-    if (
-        head_dim == 128
-        and sparse_block_size_q == 64
-        and sparse_block_size_kv == 64
-    ):
+    if head_dim == 128 and sparse_block_size_q == 64 and sparse_block_size_kv == 64:
         return FwdConfig(64, 64, True, True)
 
     if head_dim <= 64:

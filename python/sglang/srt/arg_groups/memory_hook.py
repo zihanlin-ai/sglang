@@ -9,6 +9,7 @@ from typing import Any
 
 from sglang.srt.arg_groups.overrides import (
     declare_resolution,
+    post_capture_kv_sizing_planned,
     resolved_view,
     resolving_view,
 )
@@ -49,7 +50,6 @@ def handle_gpu_memory_settings(server_args: Any, gpu_mem):
     )
     from sglang.srt.arg_groups.overrides import (
         model_config_of,
-        post_capture_kv_sizing_planned,
         use_mla_backend,
     )
 

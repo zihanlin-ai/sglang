@@ -7,6 +7,9 @@ import logging
 from typing import Any
 
 from sglang.srt.arg_groups.overrides import (
+    _dllm_attention_backend,
+    _dllm_overlap_disable,
+    _dllm_page_size,
     declare_resolution,
     resolving_view,
 )
@@ -46,11 +49,7 @@ def handle_dllm_inference(server_args: Any):
                 ),
             )
 
-    from sglang.srt.arg_groups.overrides import (
-        _dllm_attention_backend,
-        _dllm_overlap_disable,
-        run_post_process_pass,
-    )
+    from sglang.srt.arg_groups.overrides import run_post_process_pass
 
     run_post_process_pass(server_args, _dllm_attention_backend)
     run_post_process_pass(server_args, _dllm_overlap_disable)
@@ -60,7 +59,6 @@ def handle_dllm_inference(server_args: Any):
     # Invoked outside the radix gate: the alignment fill keeps its radix
     # gate inside the pass, the block-size cap applies regardless (it
     # replaces the unconditional scheduler-init fallback).
-    from sglang.srt.arg_groups.overrides import _dllm_page_size
 
     run_post_process_pass(server_args, _dllm_page_size)
 

@@ -6,8 +6,10 @@ import os
 from typing import TYPE_CHECKING, Optional
 
 from sglang.srt.arg_groups.overrides import (
+    _speculative_moe_runner_default,
     declare_direct_writes,
     declare_resolution,
+    resolved_view,
     resolving_view,
 )
 
@@ -86,10 +88,7 @@ def handle_speculative_decoding(server_args: ServerArgs) -> None:
 
     # Moved to the resolution pipeline (arg_groups/overrides.py:
     # _speculative_moe_runner_default), invoked here at its legacy slot.
-    from sglang.srt.arg_groups.overrides import (
-        _speculative_moe_runner_default,
-        run_post_process_pass,
-    )
+    from sglang.srt.arg_groups.overrides import run_post_process_pass
 
     run_post_process_pass(server_args, _speculative_moe_runner_default)
 
@@ -184,7 +183,6 @@ def handle_speculative_decoding(server_args: ServerArgs) -> None:
 
 def _handle_dflash(server_args: ServerArgs) -> None:
     cfg = resolving_view(server_args)
-    from sglang.srt.arg_groups.overrides import resolved_view
 
     if not (cfg.device.startswith("cuda") or cfg.device == "npu"):
         raise ValueError(
@@ -580,10 +578,7 @@ def _resolve_dflash_draft_attention_backend(server_args: ServerArgs) -> None:
 
     draft_backend = cfg.speculative_draft_attention_backend
     if draft_backend is None:
-        from sglang.srt.arg_groups.overrides import (
-            attention_backends_of,
-            resolved_view,
-        )
+        from sglang.srt.arg_groups.overrides import attention_backends_of
 
         draft_backend, _ = attention_backends_of(resolved_view(server_args))
     if draft_backend is None:
@@ -666,10 +661,7 @@ def _handle_eagle_family(server_args: ServerArgs) -> None:
     from sglang.srt.arg_groups.overrides import model_config_of
 
     cfg = resolving_view(server_args)
-    from sglang.srt.arg_groups.overrides import (
-        attention_backends_of,
-        resolved_view,
-    )
+    from sglang.srt.arg_groups.overrides import attention_backends_of
 
     if (
         cfg.speculative_algorithm == "STANDALONE"
@@ -799,8 +791,6 @@ def _handle_eagle_family(server_args: ServerArgs) -> None:
                 "coins from the global RNG and is not batch-invariant."
             )
 
-        from sglang.srt.arg_groups.overrides import resolved_view
-
         if (
             resolved_view(server_args).enable_multi_layer_eagle
             and cfg.speculative_eagle_topk != 1
@@ -914,8 +904,6 @@ def _handle_ngram(server_args: ServerArgs) -> None:
         "The mixed chunked prefill are disabled because of "
         "using ngram speculative decoding."
     )
-
-    from sglang.srt.arg_groups.overrides import resolved_view
 
     view = resolved_view(server_args)
     if (

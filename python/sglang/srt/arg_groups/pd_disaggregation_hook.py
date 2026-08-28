@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 from sglang.srt.arg_groups.overrides import (
     declare_resolution,
+    resolved_view,
     resolving_view,
 )
 from sglang.srt.environ import envs
@@ -89,7 +90,6 @@ def handle_pd_disaggregation(server_args: ServerArgs) -> None:
                     "with speculative decoding "
                     f"(--speculative-algorithm {cfg.speculative_algorithm})"
                 )
-            from sglang.srt.arg_groups.overrides import resolved_view
 
             if resolved_view(server_args).enable_dp_attention:
                 logger.warning(

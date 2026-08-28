@@ -4,6 +4,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from sglang.srt.arg_groups.overrides import (
+    _deepseek_v4_kv_cache_dtype,
     declare_resolution,
     resolving_view,
 )
@@ -129,10 +130,7 @@ def apply_deepseek_v4_defaults(server_args: ServerArgs, model_arch: str) -> None
     # The kv-cache dtype default moved to the resolution pipeline
     # (arg_groups/overrides.py: _deepseek_v4_kv_cache_dtype), invoked here at
     # its legacy slot.
-    from sglang.srt.arg_groups.overrides import (
-        _deepseek_v4_kv_cache_dtype,
-        run_post_process_pass,
-    )
+    from sglang.srt.arg_groups.overrides import run_post_process_pass
 
     run_post_process_pass(server_args, _deepseek_v4_kv_cache_dtype)
 

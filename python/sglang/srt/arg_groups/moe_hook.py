@@ -13,7 +13,9 @@ from sglang.srt.arg_groups.overrides import (
     _a2a_fusion_adjustments,
     _moe_runner_backend_quant_constraints,
     _moe_runner_fusion_disable,
+    cutedsl_moe_max_num_tokens,
     declare_resolution,
+    max_prefill_buffer_tokens,
     max_speculative_num_draft_tokens,
     resolved_view,
     resolving_view,
@@ -361,7 +363,6 @@ def validate_deepep_v2_speculative_draft(server_args: Any) -> None:
 
 def validate_deepep_v2_dispatch_token_budget(server_args: Any) -> None:
     """Check the configured prefill and decode-graph buffer bounds."""
-    from sglang.srt.arg_groups.overrides import max_prefill_buffer_tokens
 
     view = resolved_view(server_args)
     if view.moe_a2a_backend != "deepep_v2":
@@ -447,7 +448,6 @@ def validate_cutedsl_a2a_token_budget(server_args: Any):
     """Fail fast if the FlashInfer A2A dispatcher workspace cannot cover the
     largest CuteDSL MoE forward. Runs after speculative decoding is resolved
     so cutedsl_moe_max_num_tokens() sees the final num_tokens_per_req."""
-    from sglang.srt.arg_groups.overrides import cutedsl_moe_max_num_tokens
 
     cfg = resolving_view(server_args)
 
