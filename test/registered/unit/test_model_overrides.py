@@ -357,14 +357,6 @@ class TestGoldenModelOverrides(_IsolatedPublish):
             enable_dp_attention=enable_dp_attention,
             enable_hierarchical_cache=enable_hierarchical_cache,
         )
-        args.is_attention_backend_not_set = lambda: all(
-            backend is None
-            for backend in (
-                args.attention_backend,
-                args.prefill_attention_backend,
-                args.decode_attention_backend,
-            )
-        )
         mixer_types = []
         if sparse_attention:
             mixer_types.append("minicpm4")
@@ -456,7 +448,6 @@ class TestGoldenModelOverrides(_IsolatedPublish):
             disaggregation_mode="null",
             enable_dp_attention=False,
             enable_hierarchical_cache=False,
-            is_attention_backend_not_set=lambda: True,
         )
         config = SimpleNamespace(
             has_minicpm_sparse_attention=True,
@@ -765,7 +756,6 @@ class TestGoldenModelOverrides(_IsolatedPublish):
                 speculative_draft_attention_backend=None,
                 page_size=None,
                 mamba_radix_cache_strategy="auto",
-                is_attention_backend_not_set=lambda: True,
                 get_model_config=lambda: model_config,
             ),
             hf_config,
@@ -971,7 +961,6 @@ class TestGoldenModelOverrides(_IsolatedPublish):
         server_args.speculative_algorithm = "DFLASH"
         server_args.prefill_attention_backend = "triton"
         server_args.speculative_draft_attention_backend = "fa3"
-        server_args.is_attention_backend_not_set = lambda: False
 
         with (
             patch.object(overrides_module, "is_blackwell_supported", return_value=True),
@@ -1093,7 +1082,9 @@ class TestGoldenModelOverrides(_IsolatedPublish):
                 _gpt_oss_overrides(
                     SimpleNamespace(
                         dtype="float16",
-                        is_attention_backend_not_set=lambda: False,
+                        attention_backend="triton",
+                        prefill_attention_backend=None,
+                        decode_attention_backend=None,
                     ),
                     SimpleNamespace(architectures=["GptOssForCausalLM"]),
                 )
@@ -1608,11 +1599,6 @@ class TestGoldenModelOverrides(_IsolatedPublish):
             )
             defaults.update(kw)
             args = SimpleNamespace(**defaults)
-            args.is_attention_backend_not_set = lambda: (
-                args.attention_backend is None
-                and args.prefill_attention_backend is None
-                and args.decode_attention_backend is None
-            )
             return args
 
         hf = _hf()
@@ -1952,11 +1938,6 @@ class TestGoldenModelOverrides(_IsolatedPublish):
             )
             defaults.update(kw)
             ns = SimpleNamespace(**defaults)
-            ns.is_attention_backend_not_set = lambda: (
-                ns.attention_backend is None
-                and ns.prefill_attention_backend is None
-                and ns.decode_attention_backend is None
-            )
             ns.get_attention_backends = lambda: (
                 ns.prefill_attention_backend or ns.attention_backend,
                 ns.decode_attention_backend or ns.attention_backend,
@@ -2255,7 +2236,8 @@ class TestGoldenModelOverrides(_IsolatedPublish):
         def _args(default_backend, **kw):
             defaults = dict(
                 attention_backend=None,
-                _get_default_attn_backend=lambda **_: default_backend,
+                prefill_attention_backend=None,
+                decode_attention_backend=None,
                 use_mla_backend=lambda: False,
                 get_model_config=lambda: None,
                 mamba_radix_cache_strategy="auto",
@@ -2263,9 +2245,17 @@ class TestGoldenModelOverrides(_IsolatedPublish):
                 speculative_algorithm=None,
             )
             defaults.update(kw)
-            return SimpleNamespace(**defaults)
+            args = SimpleNamespace(**defaults)
+            args.default_backend_for_test = default_backend
+            return args
 
-        with patch.object(overrides_module, "is_sm100_supported", return_value=True):
+        with patch.object(
+            overrides_module, "is_sm100_supported", return_value=True
+        ), patch.object(
+            overrides_module,
+            "get_default_attn_backend",
+            lambda server_args, **_: server_args.default_backend_for_test,
+        ):
             # radix on + no extra buffer + no spec -> page_size=1 path
             self.assertEqual(
                 _qwen3_5_hybrid_overrides(_args("trtllm_mha"), None),
@@ -2422,11 +2412,6 @@ class TestGoldenModelOverrides(_IsolatedPublish):
             )
             defaults.update(kw)
             ns = SimpleNamespace(**defaults)
-            ns.is_attention_backend_not_set = lambda: (
-                ns.attention_backend is None
-                and ns.prefill_attention_backend is None
-                and ns.decode_attention_backend is None
-            )
             return ns
 
         hf = SimpleNamespace()
@@ -2585,7 +2570,8 @@ class TestGoldenModelOverrides(_IsolatedPublish):
             defaults = dict(
                 device="cuda",
                 attention_backend=None,
-                is_attention_backend_not_set=lambda: True,
+                prefill_attention_backend=None,
+                decode_attention_backend=None,
                 # keep the (now-absorbed) quant/moe blocks inert so these
                 # assertions stay attention-only
                 moe_runner_backend="triton",
@@ -2742,7 +2728,6 @@ class TestGoldenModelOverrides(_IsolatedPublish):
 
         def _args(**kw):
             defaults = dict(
-                is_attention_backend_not_set=lambda: True,
                 attention_backend=None,
                 prefill_attention_backend=None,
                 decode_attention_backend=None,
@@ -2869,7 +2854,12 @@ class TestGoldenModelOverrides(_IsolatedPublish):
             defaults = dict(
                 speculative_algorithm=None,
                 enable_hierarchical_cache=False,
-                is_attention_backend_not_set=lambda: False,
+                # A backend is already decided, so the attention branch stays
+                # out of these assertions -- what the stubbed predicate used to
+                # say, now said with the fields it reads.
+                attention_backend="triton",
+                prefill_attention_backend=None,
+                decode_attention_backend=None,
             )
             defaults.update(kw)
             return SimpleNamespace(**defaults)
