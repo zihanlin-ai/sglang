@@ -145,7 +145,7 @@ def _registry_collection_is_after_the_build():
             name = func.id
         else:
             continue
-        if name == "get_model_config" and build is None:
+        if name == "model_config_of" and build is None:
             build = node.lineno
         if name == "collect_model_override_declarations" and collect is None:
             collect = node.lineno
@@ -495,8 +495,8 @@ def _declaration_positions():
                 for node in ast.walk(methods[method]):
                     if (
                         isinstance(node, ast.Call)
-                        and isinstance(node.func, ast.Attribute)
-                        and node.func.attr == "get_model_config"
+                        and isinstance(node.func, ast.Name)
+                        and node.func.id == "model_config_of"
                     ):
                         return index, step, method, node.lineno
         return None
@@ -670,8 +670,8 @@ class TestModelConfigReadsResolvedInput(CustomTestCase):
             for method in reached[step]
             if any(
                 isinstance(node, ast.Call)
-                and isinstance(node.func, ast.Attribute)
-                and node.func.attr == "get_model_config"
+                and isinstance(node.func, ast.Name)
+                and node.func.id == "model_config_of"
                 for node in ast.walk(methods[method])
             )
         )

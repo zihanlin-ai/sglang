@@ -36,7 +36,7 @@ import unittest.mock
 import torch
 
 import sglang
-from sglang.srt.arg_groups.overrides import resolution_result
+from sglang.srt.arg_groups.overrides import model_config_of, resolution_result
 from sglang.srt.environ import EnvField, envs
 from sglang.srt.server_args import ServerArgs
 from sglang.srt.utils import is_cuda
@@ -846,7 +846,7 @@ class TestACopyStaysResolved(_RestoresProcessState, CustomTestCase):
             [],
             f"the copy did not carry what resolution left on the record: {missing}",
         )
-        self.assertIsNotNone(copy_.get_model_config())
+        self.assertIsNotNone(model_config_of(copy_))
         # Containers are copied, so the copy's declaration stays with it.
         self.assertEqual(
             len(parent._resolved_overrides) + 1, len(copy_._resolved_overrides)

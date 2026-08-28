@@ -825,9 +825,7 @@ class TestHiSparseDsaBackendPolicy(unittest.TestCase):
         )
         defaults.update(kw)
         view = ResolvedView(
-            SimpleNamespace(
-                get_model_config=lambda: SimpleNamespace(hf_config=hf), **defaults
-            )
+            SimpleNamespace(_model_config=SimpleNamespace(hf_config=hf), **defaults)
         )
         with (
             patch("sglang.srt.configs.model_config.is_deepseek_dsa", return_value=True),
@@ -1678,7 +1676,7 @@ class TestAdaptiveSpecArgs(CustomTestCase):
             args.speculative_adaptive = True
             args.speculative_adaptive_config = f.name
             args.device = "cuda"
-            args.get_model_config = lambda: SimpleNamespace(
+            args._model_config = SimpleNamespace(
                 hf_config=SimpleNamespace(
                     architectures=["LlamaForCausalLM"],
                     get_text_config=lambda: SimpleNamespace(),
