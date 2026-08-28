@@ -7,7 +7,15 @@ import logging
 from typing import Any
 
 from sglang.srt.arg_groups.overrides import (
+    _deepseek_moe_quant_resolution,
+    _dsa_kv_cache_dtype_default,
+    _dsa_split_backend_resolution,
+    _hrm_text_attention_force,
+    _mamba_radix_cache_resolution,
+    _sparse_head_overlap_disable,
     declare_resolution,
+    mamba_cache_chunk_size,
+    mamba_extra_buffer_of,
     resolved_view,
     resolving_view,
 )
@@ -209,11 +217,7 @@ def handle_model_specific_adjustments(server_args: Any):
                 import torch
 
                 major, _ = torch.cuda.get_device_capability()
-                from sglang.srt.arg_groups.overrides import (
-                    _dsa_kv_cache_dtype_default,
-                    _dsa_split_backend_resolution,
-                    run_post_process_pass,
-                )
+                from sglang.srt.arg_groups.overrides import run_post_process_pass
 
                 run_post_process_pass(server_args, _dsa_kv_cache_dtype_default)
                 run_post_process_pass(server_args, _dsa_split_backend_resolution)
@@ -297,10 +301,7 @@ def handle_model_specific_adjustments(server_args: Any):
         # kv-cache-dtype default above must read the pristine
         # quantization). The HIP arm (fusion log + spec_moe writes, the
         # latter awaiting the speculative-hook migration) stays below.
-        from sglang.srt.arg_groups.overrides import (
-            _deepseek_moe_quant_resolution,
-            run_post_process_pass,
-        )
+        from sglang.srt.arg_groups.overrides import run_post_process_pass
 
         run_post_process_pass(server_args, _deepseek_moe_quant_resolution)
         if is_hip():
@@ -575,10 +576,7 @@ def handle_model_specific_adjustments(server_args: Any):
     # resolved before that tail write of disable_overlap_schedule.
     handle_mamba_radix_cache(server_args, model_arch)
 
-    from sglang.srt.arg_groups.overrides import (
-        _sparse_head_overlap_disable,
-        run_post_process_pass,
-    )
+    from sglang.srt.arg_groups.overrides import run_post_process_pass
 
     run_post_process_pass(server_args, _sparse_head_overlap_disable)
 
@@ -608,10 +606,7 @@ def handle_model_capability_adjustments(server_args: Any):
     cfg = resolving_view(server_args)
     if parse_connector_type(cfg.model_path) == ConnectorType.INSTANCE:
         return
-    from sglang.srt.arg_groups.overrides import (
-        _hrm_text_attention_force,
-        run_post_process_pass,
-    )
+    from sglang.srt.arg_groups.overrides import run_post_process_pass
 
     model_config = model_config_of(server_args)
     hf_config = model_config.hf_config
@@ -832,11 +827,7 @@ def handle_mamba_radix_cache(server_args: Any, model_arch: str):
         validate_mamba_extra_buffer,
         validate_mamba_no_buffer,
     )
-    from sglang.srt.arg_groups.overrides import (
-        _mamba_radix_cache_resolution,
-        mamba_extra_buffer_of,
-        run_post_process_pass,
-    )
+    from sglang.srt.arg_groups.overrides import run_post_process_pass
 
     run_post_process_pass(server_args, _mamba_radix_cache_resolution)
     view = resolved_view(server_args)
@@ -847,7 +838,7 @@ def handle_mamba_radix_cache(server_args: Any, model_arch: str):
         validate_mamba_extra_buffer(
             view,
             model_arch,
-            mamba_cache_chunk_size_of=lambda: server_args.mamba_cache_chunk_size,
+            mamba_cache_chunk_size_of=lambda: mamba_cache_chunk_size(server_args),
         )
     else:
         validate_mamba_no_buffer(view, model_arch)

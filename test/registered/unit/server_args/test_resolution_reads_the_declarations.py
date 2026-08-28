@@ -4,7 +4,7 @@
 nothing. The fields keep what the caller passed, so a resolver that reads a
 field another resolver may have decided reads the raw input -- silently, and
 only on the configurations where that other resolver fires. The whole pipeline
-therefore reads through `resolving_view` (or `ServerArgs._resolved()`, which is
+therefore reads through `resolving_view` (or `resolved_view`, which is
 the same view spelled as the record's own member), and this pins that there is
 nothing left reading a field directly.
 

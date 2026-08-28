@@ -8,7 +8,13 @@ import os
 from typing import Any
 
 from sglang.srt.arg_groups.overrides import (
+    _a2a_backend_overrides,
+    _a2a_ep_size,
+    _a2a_fusion_adjustments,
+    _moe_runner_backend_quant_constraints,
+    _moe_runner_fusion_disable,
     declare_resolution,
+    max_speculative_num_draft_tokens,
     resolved_view,
     resolving_view,
 )
@@ -27,11 +33,7 @@ def handle_moe_kernel_config(server_args: Any):
     from sglang.srt.arg_groups.overrides import model_config_of
 
     cfg = resolving_view(server_args)
-    from sglang.srt.arg_groups.overrides import (
-        _moe_runner_backend_quant_constraints,
-        _moe_runner_fusion_disable,
-        run_post_process_pass,
-    )
+    from sglang.srt.arg_groups.overrides import run_post_process_pass
 
     run_post_process_pass(server_args, _moe_runner_backend_quant_constraints)
 
@@ -121,12 +123,7 @@ def handle_a2a_moe(server_args: Any):
     from sglang.srt.arg_groups.overrides import model_config_of
 
     cfg = resolving_view(server_args)
-    from sglang.srt.arg_groups.overrides import (
-        _a2a_backend_overrides,
-        _a2a_ep_size,
-        _a2a_fusion_adjustments,
-        run_post_process_pass,
-    )
+    from sglang.srt.arg_groups.overrides import run_post_process_pass
 
     run_post_process_pass(server_args, _a2a_backend_overrides)
     run_post_process_pass(server_args, _a2a_ep_size)
@@ -364,13 +361,15 @@ def validate_deepep_v2_speculative_draft(server_args: Any) -> None:
 
 def validate_deepep_v2_dispatch_token_budget(server_args: Any) -> None:
     """Check the configured prefill and decode-graph buffer bounds."""
+    from sglang.srt.arg_groups.overrides import max_prefill_buffer_tokens
+
     view = resolved_view(server_args)
     if view.moe_a2a_backend != "deepep_v2":
         return
 
     capacity = envs.SGLANG_DEEPEP_V2_NUM_MAX_DISPATCH_TOKENS_PER_RANK.get()
     if view.disaggregation_mode != "decode":
-        prefill_tokens = server_args.max_prefill_buffer_tokens() or (
+        prefill_tokens = max_prefill_buffer_tokens(server_args) or (
             view.max_prefill_tokens or 0
         )
         if prefill_tokens > capacity:
@@ -394,7 +393,7 @@ def validate_deepep_v2_dispatch_token_budget(server_args: Any) -> None:
         per_rank_pool_bs = max(1, view.max_running_requests // attn_dp_size)
         graph_bs = min(graph_bs, per_rank_pool_bs)
     tokens_per_req = (
-        server_args.max_speculative_num_draft_tokens or 1
+        max_speculative_num_draft_tokens(server_args) or 1
         if view.speculative_algorithm
         else 1
     )
@@ -448,6 +447,8 @@ def validate_cutedsl_a2a_token_budget(server_args: Any):
     """Fail fast if the FlashInfer A2A dispatcher workspace cannot cover the
     largest CuteDSL MoE forward. Runs after speculative decoding is resolved
     so cutedsl_moe_max_num_tokens() sees the final num_tokens_per_req."""
+    from sglang.srt.arg_groups.overrides import cutedsl_moe_max_num_tokens
+
     cfg = resolving_view(server_args)
 
     view = resolved_view(server_args)
@@ -458,7 +459,7 @@ def validate_cutedsl_a2a_token_budget(server_args: Any):
         and cfg.disaggregation_mode != "decode"
     ):
         return
-    required_tokens = server_args.cutedsl_moe_max_num_tokens()
+    required_tokens = cutedsl_moe_max_num_tokens(server_args)
     max_dispatch_tokens_per_rank = (
         envs.SGLANG_FLASHINFER_NUM_MAX_DISPATCH_TOKENS_PER_RANK.get() or 1024
     )
